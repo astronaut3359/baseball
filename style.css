@@ -1,0 +1,98 @@
+body {
+    font-family: -apple-system, 'SF Pro Display', 'Univers', Arial, sans-serif;
+    background-color: #000000;
+    color: #ffffff;
+    max-width: 800px;
+    margin: auto;
+}
+
+h2.game_title {
+    font-weight:normal;
+    font-size:110%;
+    text-align:center;
+    margin-bottom:5px;
+}
+
+h3.subtitle {
+    text-align:center;
+    font-size:90%;
+    font-weight:normal;
+    margin-top:0;
+}
+
+h3.game {
+    font-weight:normal;
+    border-left:4px solid #53BBD3;
+    height:1.5em;
+    padding:0 10px;
+    font-size:100%;
+    margin-bottom:0;
+    margin-top:2em;
+}
+
+table {
+    border-collapse: collapse;
+    width:100%;
+}
+
+.inning-score{
+    border:solid 2px #000000;
+}
+
+.inning-score th{
+    color:#aaaaaa;
+    font-weight: normal;
+    text-align:center;
+}
+
+.inning-score td.score_team{
+    background-color: #252525;
+    border:solid 2px #000000;
+    text-align:center;
+    padding:3px;
+}
+
+.inning-score td.runs{
+    width:7%;
+    background-color: #252525;
+    border:solid 2px #000000;
+    text-align:center;
+}
+
+table.homeruns td.team {
+    width:30%;
+    background-color: #252525;
+    border:solid 2px #000000;
+    text-align:center;
+}
+
+table.homeruns td {
+    padding:3px;
+}
+
+table.pitchers td.team {
+    width:30%;
+    background-color: #252525;
+    border:solid 2px #000000;
+    text-align:center;
+}
+
+table.pitchers td {
+    padding:3px;
+}
+
+.back a{
+    display: block;
+    background-color: #333333;
+    color:#ffffff;
+    text-align:center;
+}
+
+@media screen and (min-width:600px) {
+    table.inning-score td.score_team{ width:20%; padding:5px;}
+    table.inning-score td.runs{ width:8%; padding:5px;}
+    table.homeruns td.team { width:20%; padding:5px; }
+    table.pitchers td.team { width:20%; padding:5px; }
+}
+
+p{ margin-top:0; padding:5px;}

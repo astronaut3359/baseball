@@ -1,0 +1,133 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Excel → 詳細スコアHTML生成ツール</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    .inning-score, .homeruns, .pitchers {
+      border-collapse: collapse;
+      margin-bottom: 20px;
+      width: 100%;
+    }
+    .inning-score th, .inning-score td,
+    .homeruns td, .pitchers td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: center;
+    }
+    .score_team { font-weight: bold; }
+    .runs { font-family: monospace; }
+  </style>
+</head>
+<body>
+  <h1>Excel → 詳細スコアHTML生成ツール</h1>
+  <input type="file" id="input-excel" /><br>
+  <label for="filename-input">保存するファイル名（拡張子不要）:</label>
+  <input type="text" id="filename-input" placeholder="例: match_result"><br>
+  <button id="generate-html-btn">HTMLを生成してダウンロード</button>
+
+  <script>
+    document.getElementById('generate-html-btn').addEventListener('click', function() {
+      const fileInput = document.getElementById('input-excel');
+      const filenameInput = document.getElementById('filename-input').value.trim();
+      const filename = filenameInput ? filenameInput + '.html' : 'exported_match.html';
+
+      if (!fileInput.files.length) {
+        alert('ファイルを選択してください。');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+
+        const inningCount = parseInt(sheet['B1']?.v || 9, 10);
+        const totalCols = inningCount + 1;
+
+        const title = sheet['B2']?.v || '';
+        const subtitle = sheet['A3']?.v || '';
+        const matchInfo = sheet['A4']?.v || '';
+
+        function cell(row, col) {
+          const cellRef = XLSX.utils.encode_cell({ r: row, c: col });
+          return sheet[cellRef]?.v ?? '';
+        }
+
+        let scoreHtml = '<table class="inning-score"><thead><tr>';
+        for (let c = 0; c <= totalCols; c++) {
+          let rawth = cell(4, c); let th = (rawth === 0 || rawth === "0") ? "0" : (rawth ?? ""); scoreHtml += '<th>' + th + '</th>';
+        }
+        scoreHtml += '</tr></thead><tbody>';
+        for (let r = 5; r <= 6; r++) {
+          scoreHtml += '<tr>';
+          for (let c = 0; c <= totalCols; c++) {
+            const cls = c === 0 ? 'score_team' : 'runs';
+            let raw = cell(r, c); let val = (raw === 0 || raw === "0") ? "0" : (raw ?? ""); scoreHtml += '<td class="' + cls + '">' + val + '</td>';
+          }
+          scoreHtml += '</tr>';
+        }
+        scoreHtml += '</tbody></table>';
+
+        const homerHtml = '<h3 class="game">本塁打</h3><table class="homeruns">' +
+          '<tr><td class="team">' + cell(9, 0) + '</td><td class="player">' + cell(9, 1) + '</td></tr>' +
+          '<tr><td class="team">' + cell(10, 0) + '</td><td class="player">' + cell(10, 1) + '</td></tr>' +
+          '</table>';
+
+        const pitcherHtml = '<h3 class="game">投手リレー</h3><table class="pitchers">' +
+          '<tr><td class="team">' + cell(13, 0) + '</td><td class="players">' + cell(13, 1) + '</td></tr>' +
+          '<tr><td class="team">' + cell(14, 0) + '</td><td class="players">' + cell(14, 1) + '</td></tr>' +
+          '</table>';
+
+        const notes = cell(17, 0);
+        const notesHtml = notes ? '<h3 class="game">備考</h3><p>' + notes + '</p>' : '';
+
+        const match = matchInfo.match(/(\d{1,2})月(\d{1,2})日/);
+let backLinkHtml = '';
+if (match) {
+  const mm = match[1].padStart(2, '0');
+  const dd = match[2].padStart(2, '0');
+  const mmdd = mm + dd;
+  backLinkHtml = `<p class="back"><a href="${mmdd}.html">&lt; 戻る</a></p>`;
+}
+
+const htmlTemplate = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>${title} / ${subtitle}</title>
+  <link rel="stylesheet" href="style.css">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+</head>
+<body>
+  <h2 class="game_title">${title}</h2>
+  <h3 class="subtitle">${subtitle}<br />${matchInfo}</h3>
+  ${scoreHtml}
+  ${homerHtml}
+  ${pitcherHtml}
+  ${notesHtml}
+  ${backLinkHtml}
+</body>
+</html>
+`;
+
+        const blob = new Blob([htmlTemplate], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => document.body.removeChild(a), 100);
+        URL.revokeObjectURL(url);
+      };
+      reader.readAsArrayBuffer(fileInput.files[0]);
+    });
+  </script>
+</body>
+</html>
